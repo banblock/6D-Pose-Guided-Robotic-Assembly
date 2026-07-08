@@ -275,10 +275,9 @@ class AIVisionNode(Node):
             cv2.rectangle(roi_mask, (410, 0), (1240, 720), 255, -1)
             frame_roi = cv2.bitwise_and(frame, frame, mask=roi_mask)
             
-            if self.publish_rgb:
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                rgb_msg = self.bridge.cv2_to_imgmsg(frame_rgb, encoding="rgb8")
-                rgb_msg.header = msg.header
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            rgb_msg = self.bridge.cv2_to_imgmsg(frame_rgb, encoding="rgb8")
+            rgb_msg.header = msg.header
             
             result = self.model.predict(
                 source=frame_roi,
@@ -289,20 +288,19 @@ class AIVisionNode(Node):
 
             detections = self._result_to_detections(result)
             
-            if self.publish_mask:
-                target_class = self.target_class
-                mask_image = self._select_target_mask(
-                    result,
-                    image_height=frame.shape[0],
-                    image_width=frame.shape[1],
-                    target_class=target_class
-                )
+            target_class = self.target_class
+            mask_image = self._select_target_mask(
+                result,
+                image_height=frame.shape[0],
+                image_width=frame.shape[1],
+                target_class=target_class
+            )
 
-                mask_msg = self.bridge.cv2_to_imgmsg(
-                    mask_image,
-                    encoding="mono8",
-                )
-                mask_msg.header = msg.header
+            mask_msg = self.bridge.cv2_to_imgmsg(
+                mask_image,
+                encoding="mono8",
+            )
+            mask_msg.header = msg.header
             
             payload = {
                 "stamp": {

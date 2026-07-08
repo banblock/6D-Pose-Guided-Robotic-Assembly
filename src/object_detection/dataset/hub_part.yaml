@@ -1,0 +1,8 @@
+path: /home/rokey/ros2_ws/src/object_detection/dataset
+train: images/train
+val: images/val
+names:
+  0: hub
+  1: part1
+  2: part2
+  3: part3

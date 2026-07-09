@@ -11,6 +11,7 @@ find_package(sensor_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetVisionData.srv"
+  "srv/AssemblyCommand.srv"
   DEPENDENCIES sensor_msgs
 )
 

@@ -36,3 +36,6 @@ AMENT_IGNORE
 .vscode/foundation_server/FoundationPose/weights/
 .vscode/
 foundation_server/FoundationPose/weights/
+
+#API key
+src/voice_processing/resource/.env

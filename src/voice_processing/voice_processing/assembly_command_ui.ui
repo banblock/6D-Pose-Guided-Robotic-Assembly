@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>900</width>
+    <height>560</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>760</width>
+    <height>480</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>협동로봇 조립 UI</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow {
+    background-color: #F3F6FB;
+}
+QWidget#centralwidget {
+    background-color: #F3F6FB;
+    font-family: "Noto Sans CJK KR", "Malgun Gothic", "Ubuntu", sans-serif;
+}
+QWidget#startPage, QWidget#commandPage {
+    background-color: #F3F6FB;
+}
+QWidget#topCard, QWidget#commandCard, QWidget#voiceCard, QWidget#statusCard {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 24px;
+}
+QLabel#titleLabel {
+    color: #111827;
+    font-size: 34px;
+    font-weight: 800;
+}
+QLabel#subTitleLabel, QLabel#hintLabel {
+    color: #64748B;
+    font-size: 17px;
+}
+QPushButton#startButton {
+    background-color: #2563EB;
+    color: white;
+    font-size: 30px;
+    font-weight: 800;
+    border: none;
+    border-radius: 32px;
+}
+QPushButton#startButton:hover {
+    background-color: #1D4ED8;
+}
+QPushButton#startButton:pressed {
+    background-color: #1E40AF;
+}
+QLabel#commandTitleLabel {
+    color: #64748B;
+    font-size: 16px;
+    font-weight: 700;
+}
+QLabel#commandLabel {
+    color: #0F172A;
+    font-size: 34px;
+    font-weight: 900;
+}
+QLabel#voiceTitleLabel, QLabel#statusTitleLabel {
+    color: #334155;
+    font-size: 19px;
+    font-weight: 800;
+}
+QTextEdit#voiceText {
+    background-color: #F8FAFC;
+    color: #0F172A;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 12px;
+    font-size: 18px;
+    line-height: 140%;
+}
+QTextEdit#statusText {
+    background-color: #0F172A;
+    color: #E5E7EB;
+    border: 1px solid #1E293B;
+    border-radius: 14px;
+    padding: 12px;
+    font-size: 17px;
+    font-family: "Ubuntu Mono", "Consolas", monospace;
+    line-height: 135%;
+}
+QPushButton#selectButton {
+    background-color: #16A34A;
+    color: white;
+    font-size: 17px;
+    font-weight: 800;
+    border: none;
+    border-radius: 14px;
+}
+QPushButton#selectButton:hover {
+    background-color: #15803D;
+}
+QPushButton#cancelButton {
+    background-color: #E2E8F0;
+    color: #334155;
+    font-size: 17px;
+    font-weight: 800;
+    border: none;
+    border-radius: 14px;
+}
+QPushButton#cancelButton:hover {
+    background-color: #CBD5E1;
+}
+QPushButton#selectButton:disabled, QPushButton#cancelButton:disabled {
+    background-color: #F1F5F9;
+    color: #CBD5E1;
+    border: 1px solid #E2E8F0;
+}
+QPushButton#selectButton:disabled:hover, QPushButton#cancelButton:disabled:hover {
+    background-color: #F1F5F9;
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="mainLayout">
+    <property name="leftMargin">
+     <number>28</number>
+    </property>
+    <property name="topMargin">
+     <number>28</number>
+    </property>
+    <property name="rightMargin">
+     <number>28</number>
+    </property>
+    <property name="bottomMargin">
+     <number>28</number>
+    </property>
+    <item>
+     <widget class="QStackedWidget" name="stackedWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="startPage">
+       <layout class="QVBoxLayout" name="startPageLayout">
+        <property name="spacing">
+         <number>18</number>
+        </property>
+        <item>
+         <widget class="QWidget" name="topCard">
+          <layout class="QVBoxLayout" name="topCardLayout">
+           <property name="leftMargin">
+            <number>28</number>
+           </property>
+           <property name="topMargin">
+            <number>24</number>
+           </property>
+           <property name="rightMargin">
+            <number>28</number>
+           </property>
+           <property name="bottomMargin">
+            <number>24</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="titleLabel">
+             <property name="text">
+              <string>협동로봇 조립 시스템</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="subTitleLabel">
+             <property name="text">
+              <string>작업을 시작하려면 “Hello, Rokey”라고 불러주세요</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="startVerticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>220</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="startButtonLayout">
+          <item>
+           <spacer name="startLeftSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="startButton">
+            <property name="minimumSize">
+             <size>
+              <width>190</width>
+              <height>190</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>190</width>
+              <height>190</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>START</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="startRightSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="commandPage">
+       <layout class="QVBoxLayout" name="commandPageLayout">
+        <property name="spacing">
+         <number>16</number>
+        </property>
+        <item>
+         <widget class="QWidget" name="commandCard">
+          <layout class="QVBoxLayout" name="commandCardLayout">
+           <property name="leftMargin">
+            <number>34</number>
+           </property>
+           <property name="topMargin">
+            <number>32</number>
+           </property>
+           <property name="rightMargin">
+            <number>34</number>
+           </property>
+           <property name="bottomMargin">
+            <number>28</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="commandTitleLabel">
+             <property name="text">
+              <string>인식된 조립 명령</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="commandTopSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>80</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLabel" name="commandLabel">
+             <property name="text">
+              <string>부품: ____   /   면: ____</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="hintLabel">
+             <property name="text">
+              <string>Hello, Rokey 이후 “A면 3번 부품 조립” 형식의 명령이 들어오면 선택 버튼이 활성화됩니다</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="commandBottomSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>80</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="buttonLayout">
+             <item>
+              <spacer name="buttonLeftSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="selectButton">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>124</width>
+                 <height>52</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>124</width>
+                 <height>52</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>선택</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="cancelButton">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>124</width>
+                 <height>52</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>124</width>
+                 <height>52</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>취소</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="bottomSplitLayout">
+          <property name="spacing">
+           <number>16</number>
+          </property>
+          <item>
+           <widget class="QWidget" name="voiceCard">
+            <layout class="QVBoxLayout" name="voiceCardLayout">
+             <property name="leftMargin">
+              <number>18</number>
+             </property>
+             <property name="topMargin">
+              <number>14</number>
+             </property>
+             <property name="rightMargin">
+              <number>18</number>
+             </property>
+             <property name="bottomMargin">
+              <number>16</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="voiceTitleLabel">
+               <property name="text">
+                <string>받은 음성 명령</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTextEdit" name="voiceText">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>135</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>135</height>
+                </size>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="plainText">
+                <string>작업을 시작하려면 “Hello, Rokey”라고 불러주세요.
+이후 “A면 3번 부품 조립” 형식으로 말해주세요.</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QWidget" name="statusCard">
+            <layout class="QVBoxLayout" name="statusCardLayout">
+             <property name="leftMargin">
+              <number>18</number>
+             </property>
+             <property name="topMargin">
+              <number>14</number>
+             </property>
+             <property name="rightMargin">
+              <number>18</number>
+             </property>
+             <property name="bottomMargin">
+              <number>16</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="statusTitleLabel">
+               <property name="text">
+                <string>작업 상태</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTextEdit" name="statusText">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>135</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>135</height>
+                </size>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="plainText">
+                <string></string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

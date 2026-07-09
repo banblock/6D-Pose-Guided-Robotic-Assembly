@@ -10,8 +10,7 @@ import trimesh
 import uvicorn
 from fastapi import FastAPI, File, UploadFile
 from pydantic import BaseModel
-from scipy.spatial.transform import Rotation
-
+from scipy.spatial.transform import Rotation 
 from estimater import *
 from datareader import *  # noqa: F401,F403
 
@@ -62,7 +61,7 @@ class FoundationPoseRuntime:
         print("[FoundationPose Server] loading mesh...")
         
         self.mesh = trimesh.load(MESH_FILE)
-
+        self.mesh.apply_scale(0.001)
         self.to_origin, extents = trimesh.bounds.oriented_bounds(self.mesh)
 
         self.bbox = np.stack(
@@ -113,7 +112,7 @@ class FoundationPoseRuntime:
         rgb, depth, mask, K = self.normalize_like_ycb_reader(rgb, depth, mask, K)
         print("rgb", rgb.shape, rgb.dtype, rgb.min(), rgb.max())
         print("depth", depth.shape, depth.dtype, np.nanmin(depth), np.nanmax(depth))
-        print("mask", mask.shape, mask.dtype, mask.min(), mask.max(), mask.sum())
+        print("mask", mask.shape, mask.dtype, mask.min(), mask.max(), mask.sum(), mask.mean())
         print("K", K, K.dtype)
         print("mesh.vertices", self.estimator.mesh.vertices.shape, self.estimator.mesh.vertices.dtype)
         print("mesh.vertex_normals", self.estimator.mesh.vertex_normals.shape, self.estimator.mesh.vertex_normals.dtype)
@@ -221,9 +220,25 @@ class FoundationPoseRuntime:
 
         return (mask > 0).astype(np.uint8)
 
-    def normalize_like_ycb_reader(self, rgb, depth, mask, K, target_w=TARGET_W, target_h=TARGET_H, zfar=np.inf):
+    def normalize_like_ycb_reader(
+        self,
+        rgb,
+        depth,
+        mask,
+        K,
+        target_w=TARGET_W,
+        target_h=TARGET_H,
+        zfar=np.inf,
+    ):
+        K_BASE_W = 640.0
+        K_BASE_H = 480.0
+
         rgb = rgb[..., :3]
-        rgb = cv2.resize(rgb, (target_w, target_h), interpolation=cv2.INTER_NEAREST)
+        rgb = cv2.resize(
+            rgb,
+            (target_w, target_h),
+            interpolation=cv2.INTER_NEAREST,
+        )
         rgb = rgb.astype(np.uint8)
 
         if depth.ndim == 3:
@@ -234,7 +249,11 @@ class FoundationPoseRuntime:
         if np.nanmax(depth) > 20.0:
             depth = depth / 1000.0
 
-        depth = cv2.resize(depth, (target_w, target_h), interpolation=cv2.INTER_NEAREST)
+        depth = cv2.resize(
+            depth,
+            (target_w, target_h),
+            interpolation=cv2.INTER_NEAREST,
+        )
         depth[(depth < 0.001) | (depth >= zfar)] = 0
 
         if mask.ndim == 3:
@@ -243,10 +262,24 @@ class FoundationPoseRuntime:
                     mask = mask[..., c]
                     break
 
-        mask = cv2.resize(mask.astype(np.uint8), (target_w, target_h), interpolation=cv2.INTER_NEAREST)
+        mask = cv2.resize(
+            mask.astype(np.uint8),
+            (target_w, target_h),
+            interpolation=cv2.INTER_NEAREST,
+        )
         mask = mask.astype(bool)
 
-        K = K.astype(np.float64)
+        K = K.astype(np.float64).copy()
+
+        # camera_k.npy가 640x480 기준이므로,
+        # 실제 입력 이미지 크기와 무관하게 최종 FoundationPose 입력 크기 기준으로 고정 변환
+        scale_x = target_w / K_BASE_W
+        scale_y = target_h / K_BASE_H
+
+        K[0, 0] *= scale_x  # fx
+        K[1, 1] *= scale_y  # fy
+        K[0, 2] *= scale_x  # cx
+        K[1, 2] *= scale_y  # cy
 
         return rgb, depth, mask, K
 

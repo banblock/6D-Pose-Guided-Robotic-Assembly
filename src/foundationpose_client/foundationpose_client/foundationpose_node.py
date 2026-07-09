@@ -11,6 +11,7 @@ from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from cv_bridge import CvBridge
 from ament_index_python.packages import get_package_share_directory
+from scipy.spatial.transform import Rotation as R
 import cv2
 from interfaces.srv import GetVisionData
 
@@ -62,7 +63,7 @@ class FoundationPoseClientNode(Node):
         if not os.path.exists(path):
             raise FileNotFoundError(f"camera_k file not found: {path}")
 
-        return np.load(path).astype(np.float32)
+        return np.load(path)
 
     def run_once(self):
         if self.already_requested or self.processing:
@@ -139,13 +140,8 @@ class FoundationPoseClientNode(Node):
             self.processing = False
             return
 
-        rgb, depth, mask, camera_k = self._resize_inputs(
-            rgb=rgb,
-            depth=depth,
-            mask=mask,
-            camera_k=self.camera_k,
-            max_width=640,
-        )
+        # resize 하지 않음
+        camera_k = self.camera_k
 
         self.get_logger().info("[STEP 5] Vision data received")
         self.get_logger().info(
@@ -284,56 +280,48 @@ class FoundationPoseClientNode(Node):
         position = result.get("position")
         quaternion = result.get("quaternion_xyzw")
         matrix = result.get("matrix")
-
+        posx = self.camera_pose_to_gripper_posx(position, quaternion)
         self.get_logger().info("========== FoundationPose Result ==========")
         self.get_logger().info(f"position [x, y, z] = {position}")
         self.get_logger().info(f"quaternion [x, y, z, w] = {quaternion}")
         self.get_logger().info(f"T_camera_hub =\n{json.dumps(matrix, indent=2)}")
         self.get_logger().info("===========================================")
+        self.get_logger().info(f"posx = {posx}")
+        self.get_logger().info("===========================================")
 
 
-    def _resize_inputs(
-        self,
-        rgb: np.ndarray,
-        depth: np.ndarray,
-        mask: np.ndarray,
-        camera_k: np.ndarray,
-        max_width: int = 640,
-    ):
-        h, w = rgb.shape[:2]
-
-        if w <= max_width:
-            return rgb, depth, mask, camera_k
-
-        scale = max_width / float(w)
-        new_w = int(w * scale)
-        new_h = int(h * scale)
-
-        rgb_resized = cv2.resize(
-            rgb,
-            (new_w, new_h),
-            interpolation=cv2.INTER_AREA,
+    def camera_pose_to_gripper_posx(self, position, quaternion):
+        package_share = get_package_share_directory("foundationpose_client")
+        handeye_path = os.path.join(
+            package_share,
+            "resource",
+            "T_gripper2camera.npy"
         )
 
-        depth_resized = cv2.resize(
-            depth,
-            (new_w, new_h),
-            interpolation=cv2.INTER_NEAREST,
-        )
+        T_gripper2camera = np.load(handeye_path)
 
-        mask_resized = cv2.resize(
-            mask,
-            (new_w, new_h),
-            interpolation=cv2.INTER_NEAREST,
-        )
+        # FoundationPose position: m -> mm
+        position_mm = np.asarray(position, dtype=float) * 1000.0
 
-        camera_k_resized = camera_k.copy()
-        camera_k_resized[0, 0] *= scale  # fx
-        camera_k_resized[1, 1] *= scale  # fy
-        camera_k_resized[0, 2] *= scale  # cx
-        camera_k_resized[1, 2] *= scale  # cy
+        T_camera2hub = np.eye(4)
+        T_camera2hub[:3, :3] = R.from_quat(quaternion).as_matrix()
+        T_camera2hub[:3, 3] = position_mm
 
-        return rgb_resized, depth_resized, mask_resized, camera_k_resized
+        T_gripper2hub = T_gripper2camera @ T_camera2hub
+
+        pos_mm = T_gripper2hub[:3, 3]
+
+        rotvec_rad = R.from_matrix(T_gripper2hub[:3, :3]).as_rotvec()
+        rotvec_deg = np.rad2deg(rotvec_rad)
+
+        return [
+            float(pos_mm[0]),
+            float(pos_mm[1]),
+            float(pos_mm[2]),
+            float(rotvec_deg[0]),
+            float(rotvec_deg[1]),
+            float(rotvec_deg[2]),
+        ]
 
 def main(args=None):
     rclpy.init(args=args)

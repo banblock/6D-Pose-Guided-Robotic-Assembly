@@ -35,3 +35,4 @@ AMENT_IGNORE
 # End of https://www.toptal.com/developers/gitignore/api/ros2
 .vscode/foundation_server/FoundationPose/weights/
 .vscode/
+foundation_server/FoundationPose/weights/

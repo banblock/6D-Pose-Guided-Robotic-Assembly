@@ -271,14 +271,28 @@ class AIVisionNode(Node):
 
         try:
             frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
-            roi_mask = np.zeros(frame.shape[:2], dtype=np.uint8)
-            cv2.rectangle(roi_mask, (410, 0), (1240, 720), 255, -1)
-            frame_roi = cv2.bitwise_and(frame, frame, mask=roi_mask)
-            
+
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             rgb_msg = self.bridge.cv2_to_imgmsg(frame_rgb, encoding="rgb8")
             rgb_msg.header = msg.header
-            
+
+            # RGB는 추론 실패 여부와 상관없이 먼저 저장
+            with self.data_lock:
+                self.latest_rgb_msg = rgb_msg
+
+            h, w = frame.shape[:2]
+
+            roi_mask = np.zeros((h, w), dtype=np.uint8)
+
+            # 기존 고정 ROI 대신 이미지 크기 기준 ROI
+            x1 = int(w * 0.3)
+            x2 = w
+            y1 = 0
+            y2 = h
+            cv2.rectangle(roi_mask, (x1, y1), (x2, y2), 255, -1)
+
+            frame_roi = cv2.bitwise_and(frame, frame, mask=roi_mask)
+
             result = self.model.predict(
                 source=frame_roi,
                 conf=self.confidence,
@@ -287,53 +301,48 @@ class AIVisionNode(Node):
             )[0]
 
             detections = self._result_to_detections(result)
-            
+
             target_class = self.target_class
             mask_image = self._select_target_mask(
                 result,
-                image_height=frame.shape[0],
-                image_width=frame.shape[1],
-                target_class=target_class
+                image_height=h,
+                image_width=w,
+                target_class=target_class,
             )
 
-            mask_msg = self.bridge.cv2_to_imgmsg(
-                mask_image,
-                encoding="mono8",
-            )
+            mask_msg = self.bridge.cv2_to_imgmsg(mask_image, encoding="mono8")
             mask_msg.header = msg.header
-            
+
             payload = {
                 "stamp": {
                     "sec": int(msg.header.stamp.sec),
                     "nanosec": int(msg.header.stamp.nanosec),
                 },
                 "frame_id": msg.header.frame_id,
-                "image_width": int(frame.shape[1]),
-                "image_height": int(frame.shape[0]),
+                "image_width": int(w),
+                "image_height": int(h),
                 "count": len(detections),
                 "detections": detections,
             }
+
             json_msg = String()
             json_msg.data = json.dumps(payload, ensure_ascii=False)
             self.detections_publisher.publish(json_msg)
 
-            has_target = self._has_target_detection(detections, self.target_class)
+            has_target = self._has_target_detection(detections, target_class)
+
             with self.data_lock:
-                self.latest_rgb_msg = rgb_msg
                 self.latest_mask_msg = mask_msg
                 self.latest_has_target = has_target
                 self.latest_detections_json = json_msg.data
-                self.latest_target_class = self.target_class
-
+                self.latest_target_class = target_class
 
             annotated = result.plot()
-            annotated[roi_mask==0] = frame[roi_mask==0]
-            cv2.rectangle(annotated, (410, 0), (1240, 720), (0, 0, 255), 2)
-                    
+            annotated[roi_mask == 0] = frame[roi_mask == 0]
+            cv2.rectangle(annotated, (x1, y1), (x2, y2), (0, 0, 255), 2)
+
             if self.publish_annotated:
-                annotated_msg = self.bridge.cv2_to_imgmsg(
-                    annotated, encoding="bgr8"
-                )
+                annotated_msg = self.bridge.cv2_to_imgmsg(annotated, encoding="bgr8")
                 annotated_msg.header = msg.header
                 self.annotated_publisher.publish(annotated_msg)
 
@@ -344,8 +353,8 @@ class AIVisionNode(Node):
                     rclpy.shutdown()
 
         except Exception as exc:
-            self.get_logger().error(f"Inference failed: {exc}")
-
+            self.get_logger().error(f"Inference failed: {repr(exc)}")
+            
     def _depth_callback(self, msg: Image) -> None:
         try:
             depth_raw = self.bridge.imgmsg_to_cv2(
@@ -386,7 +395,7 @@ class AIVisionNode(Node):
             detections_json = self.latest_detections_json
             has_target = self.latest_has_target
             latest_target_class = self.latest_target_class
-
+            
         if rgb_msg is None:
             response.success = False
             response.message = "rgb image is not ready"

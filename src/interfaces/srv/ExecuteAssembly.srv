@@ -1,0 +1,11 @@
+# Request
+uint8 face_id
+uint8 part_id
+float32[] est_pos
+
+---
+# Response
+bool success
+uint8 failed_step
+uint8 error_code
+string message

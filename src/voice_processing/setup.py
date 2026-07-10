@@ -13,7 +13,10 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
 
-        (os.path.join('share', package_name, 'resource'), glob('resource/*') + ['resource/.env']),
+        (
+            os.path.join("share", package_name, "ui"),
+            glob(os.path.join(package_name, "*.ui")),
+        ),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

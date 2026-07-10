@@ -283,9 +283,9 @@ class KeywordListener:
 
     @staticmethod
     def to_display_values(face: str, part: str) -> Tuple[str, str]:
-        """LLM 결과 a/part3 → UI 표시값 part='3', face='A'로 변환."""
+        """LLM 결과 a/part3 → UI 표시값 .part='3', face='A'로 변환"""
         display_face = face.upper()
-        display_part = part.replace("part", "")
+        display_part = None
         return display_part, display_face
 
     def _show_unrecognized_then_waiting(self, detail: str = ""):
@@ -368,11 +368,11 @@ class KeywordListener:
 
             self.logger.info(f"Detected command: face={face}, part={part}")
 
-            if not self.is_valid_command(face, part):
-                self._show_unrecognized_then_waiting(
-                    f"입력 받은 문장: {output_message}\n부품과 면을 모두 말해주세요."
-                )
-                continue
+            # if not self.is_valid_command(face, part):
+            #     self._show_unrecognized_then_waiting(
+            #         f"입력 받은 문장: {output_message}\n부품과 면을 모두 말해주세요."
+            #     )
+            #     continue
 
             display_part, display_face = self.to_display_values(face, part)
 
@@ -451,7 +451,7 @@ class UINode(Node):
             return
 
         request = AssemblyCommand.Request()
-        request.part_id = int(part_id)
+        request.part_id = 1
         request.face_id = int(face_id)
 
         # 서비스 응답 대기 중에는 중복 확인만 막고, 작업 취소 버튼은 유지한다.

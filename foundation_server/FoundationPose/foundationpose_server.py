@@ -230,8 +230,8 @@ class FoundationPoseRuntime:
         target_h=TARGET_H,
         zfar=np.inf,
     ):
-        K_BASE_W = 640.0
-        K_BASE_H = 480.0
+        K_BASE_W = 1280.0
+        K_BASE_H = 720.0
 
         rgb = rgb[..., :3]
         rgb = cv2.resize(

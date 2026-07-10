@@ -13,7 +13,7 @@ from cv_bridge import CvBridge
 from ament_index_python.packages import get_package_share_directory
 from scipy.spatial.transform import Rotation as R
 import cv2
-from interfaces.srv import GetVisionData
+from interfaces.srv import GetVisionData, AssemblyCommand
 
 
 class FoundationPoseClientNode(Node):
@@ -45,10 +45,23 @@ class FoundationPoseClientNode(Node):
             self.vision_service,
         )
 
+        # self.main_task_client = self.create_client(
+
+        # )
+
+        # self.camera_pos_client = self.create_client(
+
+        # )
+
         self.already_requested = False
         self.processing = False
 
-        self.timer = self.create_timer(1.0, self.run_once)
+        # self.timer = self.create_timer(1.0, self.run_once)
+        self.voice_server = self.create_service(
+            AssemblyCommand,
+            '/assembly/command',
+            self.voice_request_callback
+        )
 
         self.get_logger().info("FoundationPoseClientNode started")
         self.get_logger().info(f"server_base_url = {self.server_base_url}")
@@ -67,11 +80,12 @@ class FoundationPoseClientNode(Node):
 
     def run_once(self):
         if self.already_requested or self.processing:
-            return
+            return False
 
         self.already_requested = True
         self.processing = True
         self.request_pose_async()
+        return True
 
     def request_pose_async(self):
         self.get_logger().info("[STEP 1] Checking FoundationPose server")
@@ -322,6 +336,20 @@ class FoundationPoseClientNode(Node):
             float(rotvec_deg[1]),
             float(rotvec_deg[2]),
         ]
+    
+    #voice node response
+    def voice_request_callback(self, request, response):
+        self.get_logger().info("received /assembly/command request")
+        self.get_logger().info(f"face_id={request.face_id}, part_id={request.part_id}")
+        
+        if request.face_id == None:
+            response.success = False
+            response.message = 'empty message'
+            return response
+
+        response.success = self.run_once()
+        return response
+
 
 def main(args=None):
     rclpy.init(args=args)

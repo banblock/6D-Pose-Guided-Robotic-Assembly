@@ -1,7 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 import re
-
+from ament_index_python.packages import get_package_share_directory
 from PyQt6 import uic
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtWidgets import QMainWindow
@@ -24,8 +24,25 @@ class AssemblyUI(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        ui_path = Path(__file__).with_name("assembly_command_ui.ui")
-        uic.loadUi(str(ui_path), self)
+        package_share_dir = Path(
+            get_package_share_directory("voice_processing")
+        )
+
+        ui_path = (
+            package_share_dir
+            / "ui"
+            / "assembly_command_ui.ui"
+        )
+
+        if not ui_path.exists():
+            raise FileNotFoundError(
+                f"UI 파일을 찾을 수 없습니다: {ui_path}"
+            )
+
+        uic.loadUi(
+            str(ui_path),
+            self,
+        )
 
         self.signals = UISignals()
 
@@ -140,14 +157,14 @@ class AssemblyUI(QMainWindow):
             self.set_command("3", "A")
             self.set_command("부품3", "A면")
         """
-        self.current_part = str(part).strip()
+        self.current_part = None
         self.current_face = str(face).strip()
 
-        part_text = self.current_part if self.current_part else "____"
+        # part_text = self.current_part if self.current_part else "____"
         face_text = self.current_face if self.current_face else "____"
-        self.commandLabel.setText(f"부품: {part_text}   /   면: {face_text}")
+        self.commandLabel.setText(f"/   면: {face_text}")
 
-        has_command = bool(self.current_part and self.current_face)
+        has_command = bool(self.current_face)
         self.set_command_buttons_enabled(has_command)
 
         self.stackedWidget.setCurrentIndex(1)
@@ -155,12 +172,12 @@ class AssemblyUI(QMainWindow):
             self.set_voice_unrecognized("부품과 면을 모두 말해주세요.")
 
     def on_select_clicked(self):
-        part_id = self.part_to_id(self.current_part)
+        part_id = None
         face_id = self.face_to_id(self.current_face)
 
-        if part_id is None or face_id is None:
+        if face_id is None:
             self.add_status_log(
-                f"명령 변환 실패: 부품={self.current_part or '미지정'}, 면={self.current_face or '미지정'}"
+                f"명령 변환 실패: 면={self.current_face or '미지정'}"
             )
             return
 

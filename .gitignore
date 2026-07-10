@@ -24,6 +24,7 @@ qtcreator-*
 *.user
 
 *~
+.env
 
 # Emacs
 .#*

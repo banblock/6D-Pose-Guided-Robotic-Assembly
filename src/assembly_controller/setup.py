@@ -1,8 +1,6 @@
 from setuptools import find_packages, setup
-from glob import glob
-import os
 
-package_name = 'voice_processing'
+package_name = 'assembly_controller'
 
 setup(
     name=package_name,
@@ -12,20 +10,11 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-
-        (
-            os.path.join("share", package_name, "ui"),
-            glob(os.path.join(package_name, "*.ui")),
-        ),
-        (
-            os.path.join("share", package_name, "resource"),
-            glob(os.path.join("resource", "*")) + glob(os.path.join("resource", ".*")),
-        ),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='rokey',
-    maintainer_email='rokey@todo.todo',
+    maintainer='hungeunlee',
+    maintainer_email='dlgnsrms00@naver.com',
     description='TODO: Package description',
     license='TODO: License declaration',
     extras_require={
@@ -35,8 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            # 'get_keyword = voice_processing.get_keyword:main',
-            'ui = voice_processing.ui_node:main',
+            "controller = assembly_controller.controller_node:main",
         ],
     },
 )

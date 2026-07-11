@@ -130,7 +130,7 @@ class AssemblyUI(QMainWindow):
     def reset_command_area(self, clear_voice: bool = False):
         self.current_part = ""
         self.current_face = ""
-        self.commandLabel.setText("부품: ____   /   면: ____")
+        self.commandLabel.setText("조립할 면: ____")
         self.set_command_buttons_enabled(False)
 
         if clear_voice:

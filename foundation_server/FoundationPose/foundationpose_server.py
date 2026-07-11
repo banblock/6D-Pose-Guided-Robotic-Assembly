@@ -31,8 +31,8 @@ DEBUG = int(os.environ.get("FP_DEBUG", "0"))
 TARGET_W = int(os.environ.get("FP_TARGET_W", "320"))
 TARGET_H = int(os.environ.get("FP_TARGET_H", "240"))
 
-EST_REFINE_ITER = int(os.environ.get("FP_EST_REFINE_ITER", "5"))
-TRACK_REFINE_ITER = int(os.environ.get("FP_TRACK_REFINE_ITER", "2"))
+EST_REFINE_ITER = int(os.environ.get("FP_EST_REFINE_ITER", "8"))
+TRACK_REFINE_ITER = int(os.environ.get("FP_TRACK_REFINE_ITER", "4"))
 
 
 app = FastAPI(title="FoundationPose HTTP Server")

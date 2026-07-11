@@ -114,20 +114,22 @@ class AssemblyRobot:
         movej(posj([0, 0, 90, 0, 90, 0]), vel=self.velj, acc=self.accj)
 
     def movel_tool(self, dx=0, dy=0, dz=0, da=0, db=0, dc=0):
+        wait(0.5)
         pos = posx([dx,dy,dz,da,db,dc])
         movel(pos, vel=self.velj, acc=self.accj, ref=DR_TOOL)
         
     def set_hub(self, est_pos):
         est_pos[0] -= 10
         movel(est_pos, vel=self.velj, acc=self.accj, ref=DR_TOOL)
-        self.movel_tool(dz=120)
+        wait(0.5)
+        self.movel_tool(dz=110)
         self.grip_close()
-        self.movel_tool(dz=-120)
+        self.movel_tool(dz=-110)
         self.movel_tool(da=-est_pos[3],dc=-est_pos[5])
         movel(self.hub_home, vel=self.velj, acc=self.accj, ref=DR_BASE)
-        self.movel_tool(dz=120)
+        self.movel_tool(dz=110)
         self.grip_open()
-        self.movel_tool(dz=-120)
+        self.movel_tool(dz=-110)
         
 
     def run(self, est_pos, face_id):

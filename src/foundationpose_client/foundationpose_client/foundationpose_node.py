@@ -378,30 +378,28 @@ class FoundationPoseClientNode(Node):
 
         quaternion_array /= quaternion_norm
 
-        position_mm = position_array * 1000.0
-
         t_camera_hub = np.eye(4, dtype=np.float64)
         t_camera_hub[:3, :3] = R.from_quat(
             quaternion_array
         ).as_matrix()
-        t_camera_hub[:3, 3] = position_mm
+        t_camera_hub[:3, 3] = position_array * 1000.0
 
         t_gripper_hub = self.handeye_matrix @ t_camera_hub
 
         position_gripper_mm = t_gripper_hub[:3, 3]
-        rotation_vector_deg = np.rad2deg(
-            R.from_matrix(
-                t_gripper_hub[:3, :3]
-            ).as_rotvec()
-        )
+        rotation_matrix = t_gripper_hub[:3, :3]
+
+        roll_deg, pitch_deg, yaw_deg = R.from_matrix(
+            rotation_matrix
+        ).as_euler("xyz", degrees=True)
 
         return [
-            float(position_gripper_mm[0]),
-            float(position_gripper_mm[1]),
-            float(position_gripper_mm[2]),
-            float(rotation_vector_deg[0]),
-            float(rotation_vector_deg[1]),
-            float(rotation_vector_deg[2]),
+            round(float(position_gripper_mm[0]), 2),
+            round(float(position_gripper_mm[1]), 2),
+            round(float(position_gripper_mm[2]), 2),
+            0.0,
+            0.0,
+            round(float(yaw_deg), 2),
         ]
 
     @staticmethod

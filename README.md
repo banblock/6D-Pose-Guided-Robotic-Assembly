@@ -2,7 +2,10 @@
 
 ## 프로젝트 소개
 
-본 프로젝트는 음성 명령과 RGB-D 비전을 활용한 협동로봇 자동 조립 시스템이다. 사용자가 조립할 면을 음성으로 지정하면, YOLO Segmentation을 통해 허브와 부품을 인식하고 FoundationPose를 이용해 허브의 6D Pose를 추정한다. 추정 결과는 Hand-eye Calibration 정보를 바탕으로 그리퍼 기준 상대 좌표로 변환되며, 협동로봇은 이를 이용해 고정된 부품을 지정된 면에 조립한다.
+본 프로젝트는 '별도의 학습없이 새로운 객체에 대응 가능한 유연한 로봇제어 시스템'을 목표로 기존의 학습을 통한 AI제어의 한계를 해결할 방안을 탐색하고 목표 달성에 보다 효용성있는 수단을 실험하는 것을 지향한다.
+본 프로젝트의 메인 테스크는 음성 명령과 RGB-D 비전을 활용한 협동로봇 자동 조립 시스템이다. 사용자가 조립할 면을 음성으로 지정하면, YOLO Segmentation을 통해 허브와 부품을 인식하고 FoundationPose를 이용해 허브의 6D Pose를 추정한다. 추정 결과는 Hand-eye Calibration 정보를 바탕으로 그리퍼 기준 상대 좌표로 변환되며, 협동로봇은 이를 이용해 고정된 부품을 지정된 면에 조립한다.
+결과적으로 부품허브는 사용자가 원하는 6D Pose로 정렬되어 예측의 정확도를 증명한다. 
+프로젝트에서 사용한 6D Pose 모델은 어떠한 추가 학습과정도 거치지 않았으며 Pose 예측에 있어 모델 입력에 필요한 물체의 mesh 및 texture 데이터 이외의 고정리소스는 사용하지 않는다.
 
 ### 주요 기능
 
@@ -15,6 +18,7 @@
 
 ## 프로젝트 목표
 
+- depth 카메라를 통한 객체 인식 및 객체의 6D Pose를 별도의 학습 없이 AI를 통해 추정한다.
 - 허브의 위치와 자세 변화에 대응할 수 있는 자동 조립 시스템을 구현한다.
 - 음성 명령, 객체 인식, 6D Pose 추정, 로봇 동작을 하나의 ROS 2 기반 파이프라인으로 연결한다.
 - 카메라 기준으로 추정한 허브 Pose를 그리퍼 기준 상대 좌표로 변환해 실제 로봇 제어에 적용한다.
@@ -38,7 +42,7 @@
 | `assembly_controller` | 조립 명령 검증과 전체 작업 흐름 관리 |
 | `object_detection` | RGB-D 영상 처리, YOLO Segmentation 및 Mask 생성 |
 | `foundationpose_client` | 비전 데이터 요청, FoundationPose 서버 추론 요청 및 좌표 변환 |
-| `foundation_server` | RGB·Depth·Mask와 CAD 모델을 이용한 허브 6D Pose 추정 |
+| `foundation_server` | RGB·Depth·Mask와 CAD 모델을 이용한 허브 6D Pose 추정을 수행하는 FastAPI server |
 | `robot_assembly` | 로봇 작업 시퀀스 생성 및 Doosan DRL 실행 요청 |
 | `interfaces` | 노드 간 통신에 사용하는 ROS 2 서비스 인터페이스 정의 |
 
@@ -52,6 +56,7 @@
 - PyQt6
 - Doosan M0609 협동로봇
 - Docker
+- FastAPI
 
 # 설치 및 실행 메뉴얼
 

@@ -25,6 +25,116 @@
 
 ## 전체 동작 흐름
 
+```mermaid
+flowchart TD
+    START(["시스템 시작"])
+    UI_START["UI 시작 버튼 클릭"]
+    WAKE["Wake Word 대기<br/>Hello Rokey"]
+    RECORD["5초 음성 입력"]
+    STT["STT 변환"]
+    STT_CHECK{"유효한 음성인가?"}
+    FILTER["무음·프롬프트 문구 제거"]
+    LLM["LLM으로 조립 면 추출"]
+    FACE_CHECK{"유효한 face인가?"}
+    SHOW["UI에 인식 결과 표시"]
+    CONFIRM{"사용자 확인"}
+    CANCEL["명령 초기화"]
+    COMMAND["/assembly/command 호출<br/>face_id + 고정 part_id"]
+
+    POSE_REQ["/foundationpose/estimate_pose 요청"]
+    HEALTH{"서버 상태 정상?"}
+    LOAD["FoundationPose 모델 및<br/>허브 CAD 리소스 로드"]
+    LOAD_CHECK{"로드 성공?"}
+
+    VISION_REQ["/ai_vision/get_vision_data 요청"]
+    YOLO["YOLO Segmentation 수행"]
+    MASK_CHECK{"허브 검출 및<br/>Mask 생성 성공?"}
+
+    DATA["RGB · Depth · Mask · Camera K"]
+    PREDICT["NPZ 압축 후 HTTP /predict"]
+    POSE_CHECK{"유효한 Pose인가?"}
+
+    CAMERA_POSE["카메라 기준 허브 Pose<br/>T_camera_hub"]
+    HAND_EYE["Hand-eye 변환"]
+    TOOL_POSE["그리퍼 기준 상대 Pose<br/>T_gripper_hub"]
+
+    ROBOT_REQ["/robot/execute_assembly 요청"]
+    HUB_PICK["허브 접근 및 파지"]
+    HUB_PLACE["허브 기준 위치 배치"]
+    PART_PICK["고정 위치의 부품 파지"]
+    ASSEMBLY["face_id에 따른 면별 조립"]
+    RETURN["후퇴 및 대기 자세 복귀"]
+    END(["작업 종료"])
+
+    ERROR["작업 중단<br/>서비스 실패 응답 및 오류 로그"]
+
+    START --> UI_START
+    UI_START --> WAKE
+    WAKE --> RECORD
+    RECORD --> STT
+    STT --> STT_CHECK
+
+    STT_CHECK -- "아니오" --> FILTER
+    FILTER --> WAKE
+    STT_CHECK -- "예" --> LLM
+
+    LLM --> FACE_CHECK
+    FACE_CHECK -- "아니오" --> WAKE
+    FACE_CHECK -- "예" --> SHOW
+
+    SHOW --> CONFIRM
+    CONFIRM -- "취소" --> CANCEL
+    CANCEL --> WAKE
+    CONFIRM -- "확인" --> COMMAND
+
+    COMMAND --> POSE_REQ
+    POSE_REQ --> HEALTH
+
+    HEALTH -- "아니오" --> ERROR
+    HEALTH -- "예" --> LOAD
+    LOAD --> LOAD_CHECK
+
+    LOAD_CHECK -- "아니오" --> ERROR
+    LOAD_CHECK -- "예" --> VISION_REQ
+
+    VISION_REQ --> YOLO
+    YOLO --> MASK_CHECK
+
+    MASK_CHECK -- "아니오" --> ERROR
+    MASK_CHECK -- "예" --> DATA
+
+    DATA --> PREDICT
+    PREDICT --> POSE_CHECK
+
+    POSE_CHECK -- "아니오" --> ERROR
+    POSE_CHECK -- "예" --> CAMERA_POSE
+
+    CAMERA_POSE --> HAND_EYE
+    HAND_EYE --> TOOL_POSE
+    TOOL_POSE --> ROBOT_REQ
+
+    ROBOT_REQ --> HUB_PICK
+    HUB_PICK --> HUB_PLACE
+    HUB_PLACE --> PART_PICK
+    PART_PICK --> ASSEMBLY
+    ASSEMBLY --> RETURN
+    RETURN --> END
+
+    classDef start fill:#102A43,stroke:#102A43,color:#FFFFFF;
+    classDef voice fill:#EAF3FF,stroke:#2563EB,color:#102A43;
+    classDef decision fill:#FFF4E5,stroke:#E58A00,color:#3D2A00;
+    classDef vision fill:#ECFDF3,stroke:#16875D,color:#123B2A;
+    classDef robot fill:#F4ECFF,stroke:#7546B8,color:#2D164A;
+    classDef error fill:#FDECEC,stroke:#C53A3A,color:#5A1111;
+
+    class START,END start;
+    class UI_START,WAKE,RECORD,STT,FILTER,LLM,SHOW,CANCEL,COMMAND voice;
+    class STT_CHECK,FACE_CHECK,CONFIRM,HEALTH,LOAD_CHECK,MASK_CHECK,POSE_CHECK decision;
+    class POSE_REQ,LOAD,VISION_REQ,YOLO,DATA,PREDICT,CAMERA_POSE,HAND_EYE,TOOL_POSE vision;
+    class ROBOT_REQ,HUB_PICK,HUB_PLACE,PART_PICK,ASSEMBLY,RETURN robot;
+    class ERROR error;
+```
+
 1. 사용자가 UI에서 음성 인식을 시작한다.
 2. Wake Word 감지 후 사용자의 음성을 STT로 변환한다.
 3. LLM을 이용해 음성 명령에서 조립할 면 정보를 추출한다.
@@ -33,6 +143,8 @@
 6. FoundationPose가 RGB, Depth, Mask, 카메라 내부 파라미터와 CAD 모델을 이용해 허브의 6D Pose를 추정한다.
 7. 추정된 Pose를 Hand-eye Calibration 결과를 이용해 그리퍼 기준 상대 좌표로 변환한다.
 8. 로봇이 허브 파지, 기준 위치 배치, 부품 파지, 지정 면 조립 순서로 작업을 수행한다.
+
+
 
 ## 시스템 구성
 

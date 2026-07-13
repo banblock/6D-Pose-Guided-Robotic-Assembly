@@ -1,5 +1,58 @@
 # 6D-Pose-Guided-Robotic-Assembly
 
+## 프로젝트 소개
+
+본 프로젝트는 음성 명령과 RGB-D 비전을 활용한 협동로봇 자동 조립 시스템이다. 사용자가 조립할 면을 음성으로 지정하면, YOLO Segmentation을 통해 허브와 부품을 인식하고 FoundationPose를 이용해 허브의 6D Pose를 추정한다. 추정 결과는 Hand-eye Calibration 정보를 바탕으로 그리퍼 기준 상대 좌표로 변환되며, 협동로봇은 이를 이용해 고정된 부품을 지정된 면에 조립한다.
+
+### 주요 기능
+
+- Wake Word 기반 음성 명령 입력
+- STT 및 LLM을 이용한 조립 면 추출
+- RGB-D 영상 기반 허브·부품 Segmentation
+- FoundationPose 기반 허브 6D Pose 추정
+- Hand-eye 변환을 이용한 그리퍼 기준 좌표 계산
+- ROS 2 서비스 기반 조립 작업 시퀀스 실행
+
+## 프로젝트 목표
+
+- 허브의 위치와 자세 변화에 대응할 수 있는 자동 조립 시스템을 구현한다.
+- 음성 명령, 객체 인식, 6D Pose 추정, 로봇 동작을 하나의 ROS 2 기반 파이프라인으로 연결한다.
+- 카메라 기준으로 추정한 허브 Pose를 그리퍼 기준 상대 좌표로 변환해 실제 로봇 제어에 적용한다.
+
+## 전체 동작 흐름
+
+1. 사용자가 UI에서 음성 인식을 시작한다.
+2. Wake Word 감지 후 사용자의 음성을 STT로 변환한다.
+3. LLM을 이용해 음성 명령에서 조립할 면 정보를 추출한다.
+4. 사용자가 UI에서 인식 결과를 확인하면 `/assembly/command` 서비스를 호출한다.
+5. YOLO Segmentation으로 허브와 부품을 인식하고 대상 객체의 Mask를 생성한다.
+6. FoundationPose가 RGB, Depth, Mask, 카메라 내부 파라미터와 CAD 모델을 이용해 허브의 6D Pose를 추정한다.
+7. 추정된 Pose를 Hand-eye Calibration 결과를 이용해 그리퍼 기준 상대 좌표로 변환한다.
+8. 로봇이 허브 파지, 기준 위치 배치, 부품 파지, 지정 면 조립 순서로 작업을 수행한다.
+
+## 시스템 구성
+
+| 구성 요소 | 역할 |
+|---|---|
+| `voice_processing` | PyQt UI, Wake Word 감지, STT 및 LLM 기반 음성 명령 처리 |
+| `assembly_controller` | 조립 명령 검증과 전체 작업 흐름 관리 |
+| `object_detection` | RGB-D 영상 처리, YOLO Segmentation 및 Mask 생성 |
+| `foundationpose_client` | 비전 데이터 요청, FoundationPose 서버 추론 요청 및 좌표 변환 |
+| `foundation_server` | RGB·Depth·Mask와 CAD 모델을 이용한 허브 6D Pose 추정 |
+| `robot_assembly` | 로봇 작업 시퀀스 생성 및 Doosan DRL 실행 요청 |
+| `interfaces` | 노드 간 통신에 사용하는 ROS 2 서비스 인터페이스 정의 |
+
+## 주요 기술
+
+- ROS 2 Humble
+- Intel RealSense RGB-D Camera
+- YOLOv8 Segmentation
+- FoundationPose
+- OpenAI STT 및 LLM
+- PyQt6
+- Doosan M0609 협동로봇
+- Docker
+
 # 설치 및 실행 메뉴얼
 
 ## 프로젝트 다운로드 및 워크스페이스 구성

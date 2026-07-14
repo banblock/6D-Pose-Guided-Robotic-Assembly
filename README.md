@@ -170,6 +170,11 @@ flowchart TD
 - Docker
 - FastAPI
 
+## 운영체제 및 개발환경
+- OS : Ubuntu 22.04 (Docker container 별도)
+- Middleware : ROS2
+- Language : Python
+
 # 설치 및 실행 메뉴얼
 
 ## 프로젝트 다운로드 및 워크스페이스 구성
